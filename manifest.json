@@ -1,0 +1,18 @@
+{
+  "name": "foxx-filestore",
+  "version": "0.0.1",
+  "author": "jsteemann, Nefarius",
+  "engines": {"arangodb":"^3.0.0"},
+  "description": "File Storage API",
+  "license": "MIT",
+  "thumbnail": "files/favicon.png",
+  "main": "files/app.js",
+  "defaultDocument": "list",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nefarius/foxx-filestore.git"
+  },
+  "scripts": {
+    "setup": "files/setup.js"
+  }
+}
