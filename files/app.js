@@ -14,6 +14,7 @@
   var collectionName = module.context.collectionName('filestore');
   var nameGenerator = require("internal").genRandomAlphaNumbers;
 
+  // Generates a random file name
   var generateName = function () {
     while (true) {
       var name = nameGenerator(10);
@@ -25,49 +26,44 @@
     }
   };
 
+  // Builds the file list response
   var buildList = function (res) {
-    // TODO: use a template
-    var body = "<html><head><title>Filelist</title></head><body>";
-   
     var files = db[collectionName].toArray().sort(function (l, r) {
       if (l.description != r.description) {
         return l.description < r.description ? -1 : 1;
       }
       return 0;
     });
-
-    body += "<h1>List of files</h1>";
+	
+	var items = [];
+    
     if (files.length) {
-      body += "<ul>"; 
       files.forEach(function (file) {
         // TODO: HTML-escape user-generated data
         var description = file.description;
         if (! description) {
           description = "no description";
         }
-        var link = "<a href=\"" + baseUrl + "/fetch/" + encodeURIComponent(file.name) + "\">" + description + "</a>";
-        body += "<li>" + link + " (" + file.originalName + ", " + file.size + " bytes)</li>";
+
+		items.push({
+			path: baseUrl + "/fetch/" + encodeURIComponent(file.name),
+			originalName: file.originalName,
+			internalName: file.name,
+			description: description,
+			size: file.size
+		});
       });
-      body += "</ul>"; 
     }
     else {
-      body += "<strong>No files found yet.</strong><br />";
+	  return {status: "No files found yet."};
     }
-
-    body += "<h1>Upload a file</h1>";
-    body += "<form action=\"" + baseUrl + "/store\" method=\"post\" enctype=\"multipart/form-data\">";
-    body += "Description: <input type=\"text\" name=\"description\"><br />";
-    body += "File: <input type=\"file\" name=\"file\"><br />";
-    body += "<input type=\"submit\" value=\"upload\">";
-    body += "</form>";
-
-    body += "</body></html>";
-    return body;
+	
+    return JSON.stringify(items, null, 4);
   };
 
  
   router.get('/list', function (req, res) {
-	res.set("Content-Type", "text/html; charset=utf-8");
+	res.set("Content-Type", "application/json; charset=utf-8");
 	res.body = buildList();
   })
   .summary("returns a list of all files");
@@ -121,8 +117,8 @@
       throw err;
     }
 
-    res.set("Content-Type", "text/html; charset=utf-8");
-	res.body = buildList();
+    res.set("Content-Type", "application/json; charset=utf-8");
+	res.body = {status: "OK"};
   }).error(400, "No file uploaded or description missing")
     .body(["multipart/form-data"]);
 
