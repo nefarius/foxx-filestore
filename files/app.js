@@ -147,6 +147,26 @@
   .summary("returns the contents of the specified file")
   .pathParam("filename", joi.string())
   .error(404, "The requested file could not be found");
+  
+  router.get('/delete/:filename', function (req, res) {
+    var name = req.param("filename");
+    var doc = db[collectionName].firstExample({ name: name });
+
+    if (!doc) {
+      res.throw(404, "The requested file could not be found");
+    }
+ 
+    var filename = fs.safeJoin(directory, name);
+
+    if (!fs.isFile(filename)) {
+      res.throw(404, "The requested file could not be found");
+    }
+
+    fs.remove(filename);
+  })
+  .summary("deletes the specified file")
+  .pathParam("filename", joi.string())
+  .error(404, "The requested file could not be found");
 
 }());
 
